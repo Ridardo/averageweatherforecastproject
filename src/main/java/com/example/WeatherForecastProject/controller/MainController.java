@@ -43,7 +43,7 @@ public class MainController {
     public String main(Map<String, Object> model) {
         //forecastRepo.deleteAll();
         //townRepo.deleteAll();
-        // проверка?
+        // проверка? проверка ветки?
         Iterable<Forecast> forecasts = forecastRepo.findAll();
         Iterable<Town> towns = townRepo.findAll();
 
