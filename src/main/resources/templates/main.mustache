@@ -1,0 +1,33 @@
+<html>
+<body>
+<div>
+    <form action="/logout" method="post">
+        <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+    <input type="submit" value="Выйти из аккаунта"/>
+    </form>
+</div>
+<div>
+    <form method="post">
+        <input type="text" name="townInput" placeholder="Введите город" />
+        <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+        <button type="submit">Запросить погоду</button>
+    </form>
+</div>
+
+<div>Список городов и прогнозов по ним:</div>
+<div>-----------------------------------------------</div>
+{{#towns}}
+    <div>
+        <span>{{name}}</span>
+        <ul>
+            <li><i><div>{{#forecasts}}
+                <div>
+                    <span>{{degrees}} градусов, </span>
+                    <span>датировано {{date}}</span>
+                </div>
+            {{/forecasts}}</div></i></li>
+        </ul>
+    </div>
+{{/towns}}
+</body>
+</html>
