@@ -1,20 +1,16 @@
 <html>
 <body>
+<a href="/main">На главную страницу</a>
 <div>
-    <form action="/logout" method="post">
-        <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
-    <input type="submit" value="Выйти из аккаунта"/>
-    </form>
-</div>
-<div>
-    <form method="post">
+    <form method="post" action="archive">
         <input type="text" name="townInput" placeholder="Введите город" />
+        <input type="date" name="dateInput" placeholder="Введите дату" />
         <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
-        <button type="submit">Запросить погоду</button>
+        <button type="submit">Запросить записи</button>
     </form>
 </div>
 
-<div>Список городов и прогнозов по ним:</div>
+<div>Все найденные прогнозы:</div>
 <div>-----------------------------------------------</div>
 {{#towns}}
     <div>
@@ -32,6 +28,6 @@
         </ul>
     </div>
 {{/towns}}
-<a href="/archive">Архив прогнозов</a>
+
 </body>
 </html>
