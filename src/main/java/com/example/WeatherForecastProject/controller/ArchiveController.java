@@ -25,10 +25,7 @@ import org.json.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class ArchiveController {
@@ -53,21 +50,33 @@ public class ArchiveController {
     public String search(@RequestParam String townInput, @RequestParam String dateInput, Map<String, Object> model) throws ParseException, IOException, JSONException {
         List<Forecast> _forecasts = forecastRepo.findByTown(townRepo.findByName(townInput));
         System.out.println(_forecasts.size());
-
-        List<Forecast> forecasts = null;
+        if (townInput == "" || dateInput == "")
+        {
+            model.put("message", "Форма не заполнена!");
+            return "archive";
+        }
         String[] dates = dateInput.split("-");
         String date = dates[2] + "-" + dates[1] + "-" + dates[0];
         System.out.println(date);
 
+        List<Forecast> forecasts = forecastRepo.findByTown(townRepo.findByName(townInput));
         _forecasts.forEach(forecast -> {
             System.out.println(forecast.getDate().substring(0, 10));
-                    if (forecast.getDate().substring(0, 10) == date) {
-                        forecasts.add(forecast);
+            System.out.println(date);
+            System.out.println(date.compareTo(forecast.getDate().substring(0, 10)));
+                    if (date.compareTo(forecast.getDate().substring(0, 10)) != 0) {
+                        forecasts.remove(forecast);
+                        System.out.println("ERASED");
                     }
                 });
-
-        model.put("towns", townRepo.findByName(townInput));
-        model.put("forecasts", forecasts);
+        System.out.println(forecasts.size());
+        if(!forecasts.isEmpty())
+        {
+            model.put("towns", townRepo.findByName(townInput));
+            model.put("forecasts", forecasts);
+            return "archive";
+        }
+        model.put("message", "По запросу прогнозов не найдено");
         return "archive";
     }
 }
