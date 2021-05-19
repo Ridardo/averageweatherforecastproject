@@ -23,11 +23,15 @@
             <li><i><div>{{#forecasts}}
                 <div>
                     <span>{{degrees}} градусов, </span>
+                    <span>ветер {{wind}}, </span>
+                    <span>{{humidity}}% влажности воздуха, </span>
+                    <span>давление {{pressure}} мм.р.с., </span>
                     <span>датировано {{date}}</span>
                 </div>
             {{/forecasts}}</div></i></li>
         </ul>
     </div>
 {{/towns}}
+<a href="/archive">Архив прогнозов</a>
 </body>
 </html>

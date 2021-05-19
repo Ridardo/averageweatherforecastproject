@@ -41,8 +41,8 @@ public class MainController {
     }
     @GetMapping("/main")
     public String main(Map<String, Object> model) {
-        //forecastRepo.deleteAll();
-        //townRepo.deleteAll();
+      //  forecastRepo.deleteAll();
+      //  townRepo.deleteAll();
         // проверка? проверка ветки?
         Iterable<Forecast> forecasts = forecastRepo.findAll();
         Iterable<Town> towns = townRepo.findAll();
@@ -54,9 +54,6 @@ public class MainController {
 
     @PostMapping("/main")
     public String add(@RequestParam String townInput, Map<String, Object> model) throws ParseException, IOException, JSONException {
-        if (!townRepo.existsByName(townInput))
-            townRepo.save(new Town(townInput));
-
         String town = "";
         Double degreesApi;
 
@@ -78,29 +75,39 @@ public class MainController {
             JSONObject obj = new JSONObject(jsonData);
             degreesApi = Double.parseDouble(obj.getJSONObject("main").getString("temp"));
             town = obj.getString("name");
-            //System.out.print(degreesApi + " " + town);
+            System.out.println(degreesApi + " " + town);
         }
         catch (Exception e) {
+            System.out.println(e + " at 84");
             return "redirect:/main";
         }
 
         String value = "";
 
         try{
+            if (!townRepo.existsByName(townInput))
+                townRepo.save(new Town(townInput));
             Document doc = Jsoup.connect("https://yandex.ru/pogoda/" + town).timeout(0).get();
             Elements e = doc.select(" div.temp.fact__temp.fact__temp_size_s");
             value = e.first().text().replace("Текущая температура", "");
-
             Double degrees = Double.parseDouble(value);
             Double outputDegrees = Precision.round(((degreesApi + degrees) / 2), 2);
-
             Forecast forecast = new Forecast(townRepo.findByName(townInput), outputDegrees, date);
+            String _wind = doc.select("div.term.term_orient_v.fact__wind-speed").text();
+            String _humidity = doc.select("div.term.term_orient_v.fact__humidity").text().replaceAll("%", "");
+            String _pressure = doc.select("div.term.term_orient_v.fact__pressure").text();
+            forecast.setHumidity(Double.parseDouble(_humidity));
+            forecast.setWind(_wind);
+            forecast.setPressure((Double.parseDouble(_pressure.split(" ")[0])));
             forecastRepo.save(forecast);
         }
         catch (Exception e) {
-            Forecast forecast = new Forecast(townRepo.findByName(townInput), degreesApi, date);
-            forecastRepo.save(forecast);
-            //return "redirect:/main";
+                if (!townRepo.existsByName(townInput))
+                    townRepo.save(new Town(townInput));
+                Forecast forecast = new Forecast(townRepo.findByName(townInput), degreesApi, date);
+                forecastRepo.save(forecast);
+            System.out.println(e + " at 110");
+            return "redirect:/main";
         }
         Iterable<Forecast> forecasts = forecastRepo.findAll();
         Iterable<Town> towns = townRepo.findAll();

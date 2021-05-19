@@ -13,6 +13,12 @@ public class Forecast {
 
     private Double degrees;
 
+    private Double pressure;
+
+    private Double humidity;
+
+    private String wind;
+
     @ManyToOne
     @JoinColumn(name="town_id")
     private Town town;
@@ -34,6 +40,18 @@ public class Forecast {
         this.town = town;
         this.degrees = degrees;
         this.date = date;
+        this.wind = "No info on wind";
+        this.humidity = -1.00;
+        this.pressure = -1.00;
+    }
+
+    public Forecast(Town town, Double degrees, String date, String wind, Double humidity, Double pressure){
+        this.town = town;
+        this.degrees = degrees;
+        this.date = date;
+        this.wind = wind;
+        this.humidity = humidity;
+        this.pressure = pressure;
     }
 
     public Double getDegrees() {
@@ -59,4 +77,28 @@ public class Forecast {
     public void setTown(Town town) {
         this.town = town;
     }
+
+    public Double getHumidity() {
+        return humidity;
+    }
+
+    public void setHumidity(Double humidity) {
+        this.humidity = humidity;
+    }
+
+    public Double getPressure() {
+        return pressure;
+    }
+
+    public void setPressure(Double pressure) {
+        this.pressure = pressure;
+    }
+
+    public String GetWind() {return wind;}
+
+    public void setWind(String wind)
+    {
+        this.wind = wind;
+    }
+
 }
