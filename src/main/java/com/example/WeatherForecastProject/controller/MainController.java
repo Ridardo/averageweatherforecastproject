@@ -41,8 +41,8 @@ public class MainController {
     }
     @GetMapping("/main")
     public String main(Map<String, Object> model) {
-      //  forecastRepo.deleteAll();
-      //  townRepo.deleteAll();
+        //forecastRepo.deleteAll();
+        //townRepo.deleteAll();
         // проверка? проверка ветки?
         Iterable<Forecast> forecasts = forecastRepo.findAll();
         Iterable<Town> towns = townRepo.findAll();
@@ -54,8 +54,13 @@ public class MainController {
 
     @PostMapping("/main")
     public String add(@RequestParam String townInput, Map<String, Object> model) throws ParseException, IOException, JSONException {
+        String tempTownInput = townInput.substring(0, 1).toUpperCase() + townInput.substring(1);
+        townInput = tempTownInput;
         String town = "";
         Double degreesApi;
+        Double windApi;
+        Double humidityApi;
+        Double pressureApi;
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -73,9 +78,14 @@ public class MainController {
 
             String jsonData = response.body().string();
             JSONObject obj = new JSONObject(jsonData);
+
             degreesApi = Double.parseDouble(obj.getJSONObject("main").getString("temp"));
+            windApi = Double.parseDouble(obj.getJSONObject("wind").getString("speed"));
+            humidityApi = Double.parseDouble(obj.getJSONObject("main").getString("humidity"));
+            pressureApi = Precision.round((Double.parseDouble(obj.getJSONObject("main").getString("pressure")) * 0.750062), 2);
             town = obj.getString("name");
-            System.out.println(degreesApi + " " + town);
+
+            System.out.println(town + ": температура " + degreesApi + " ветер " + windApi + " влажность " + humidityApi + " давление " + pressureApi * 0.750062);
         }
         catch (Exception e) {
             System.out.println(e + " at 84");
@@ -84,31 +94,58 @@ public class MainController {
 
         String value = "";
 
+
         try{
             if (!townRepo.existsByName(townInput))
                 townRepo.save(new Town(townInput));
             Document doc = Jsoup.connect("https://yandex.ru/pogoda/" + town).timeout(0).get();
+
             Elements e = doc.select(" div.temp.fact__temp.fact__temp_size_s");
             value = e.first().text().replace("Текущая температура", "");
             Double degrees = Double.parseDouble(value);
             Double outputDegrees = Precision.round(((degreesApi + degrees) / 2), 2);
             Forecast forecast = new Forecast(townRepo.findByName(townInput), outputDegrees, date);
+
             String _wind = doc.select("div.term.term_orient_v.fact__wind-speed").text();
-            String _humidity = doc.select("div.term.term_orient_v.fact__humidity").text().replaceAll("%", "");
-            String _pressure = doc.select("div.term.term_orient_v.fact__pressure").text();
-            forecast.setHumidity(Double.parseDouble(_humidity));
+
+            if (_wind.equals("Штиль"))
+                _wind = "0 м/с";
+
+
+            String[] splittedWindInput = _wind.split(" ");
+            Double outputWindTemp = Precision.round(
+                    ((Double.parseDouble(splittedWindInput[0].replace(',','.')) + windApi) / 2), 2);
+            //System.out.println(Double.parseDouble(splittedWindInput[0].replace(',','.')));
+
+            if (splittedWindInput.length == 3)
+            {
+                String direction = splittedWindInput[2];
+                _wind = direction + " " + outputWindTemp.toString();
+            }
+            else
+                _wind = outputWindTemp.toString();
+
             forecast.setWind(_wind);
-            forecast.setPressure((Double.parseDouble(_pressure.split(" ")[0])));
+
+            String _humidity = doc.select("div.term.term_orient_v.fact__humidity").text().replaceAll("%", "");
+            Double outputHumidity = Precision.round(((Double.parseDouble(_humidity) + humidityApi) / 2), 2);
+            forecast.setHumidity(outputHumidity);
+
+            String _pressure = doc.select("div.term.term_orient_v.fact__pressure").text();
+            Double outputPressure = Precision.round(((Double.parseDouble(_pressure.split(" ")[0]) + pressureApi) / 2), 2);
+            forecast.setPressure(outputPressure);
+
             forecastRepo.save(forecast);
         }
         catch (Exception e) {
-                if (!townRepo.existsByName(townInput))
-                    townRepo.save(new Town(townInput));
-                Forecast forecast = new Forecast(townRepo.findByName(townInput), degreesApi, date);
-                forecastRepo.save(forecast);
-            System.out.println(e + " at 110");
+            if (!townRepo.existsByName(townInput))
+                townRepo.save(new Town(townInput));
+            Forecast forecast = new Forecast(townRepo.findByName(townInput), degreesApi, date, windApi.toString() + " м/c", humidityApi, pressureApi);
+            forecastRepo.save(forecast);
+            System.out.println(e + " somewhere lmao");
             return "redirect:/main";
         }
+
         Iterable<Forecast> forecasts = forecastRepo.findAll();
         Iterable<Town> towns = townRepo.findAll();
 
