@@ -18,6 +18,16 @@ public class Town {
     @OneToMany(targetEntity = Forecast.class,mappedBy = "town", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Forecast> forecasts;
 
+    private String future;
+
+    public String getFuture() {
+        return future;
+    }
+
+    public void setFuture(String future) {
+        this.future = future;
+    }
+
     public Integer getId() {
         return id;
     }
