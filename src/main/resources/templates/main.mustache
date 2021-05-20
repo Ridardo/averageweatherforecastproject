@@ -18,12 +18,15 @@
 <div>-----------------------------------------------</div>
 {{#towns}}
     <div>
-        <span>{{name}}</span>
+        <span>Прогноз на завтра в городе <b>{{name}}</b>: <u>{{future}}</u></span>
+        <div>
+            Архив:
+        </div>
         <ul>
             <li><i><div>{{#forecasts}}
                 <div>
                     <span>{{degrees}}℃, </span>
-                    <span>ветер {{wind}}, </span>
+                    <span>ветер {{wind}} м/с, </span>
                     <span>влажность {{humidity}}%, </span>
                     <span>давление {{pressure}} мм.р.с., </span>
                     <span>датировано {{date}}</span>
@@ -32,6 +35,6 @@
         </ul>
     </div>
 {{/towns}}
-<a href="/archive">Архив прогнозов</a>
+<a href="/archive">Поиск прогнозов</a>
 </body>
 </html>

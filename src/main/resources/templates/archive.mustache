@@ -15,24 +15,22 @@
 
 <div>Все найденные прогнозы:</div>
 <div>-----------------------------------------------</div>
-<<<<<<< Updated upstream
-{{#message}}
-    {{message}}
-{{/message}}
-=======
 {{#towns}}
->>>>>>> Stashed changes
     <div>
-            {{#forecasts}}
+        <span>{{name}}</span>
+        <ul>
+            <li><i><div>{{#forecasts}}
                 <div>
-                    <span>{{#town}} {{name}} {{/town}}: </span>
                     <span>{{degrees}} градусов, </span>
                     <span>ветер {{wind}}, </span>
                     <span>{{humidity}}% влажности воздуха, </span>
                     <span>давление {{pressure}} мм.р.с., </span>
                     <span>датировано {{date}}</span>
                 </div>
-            {{/forecasts}}
+            {{/forecasts}}</div></i></li>
+        </ul>
     </div>
+{{/towns}}
+
 </body>
 </html>

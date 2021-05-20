@@ -103,9 +103,6 @@ public class MainController {
             pressure += yandexParse.get("Pressure");
         }
 
-        if (successAmount == 0)
-            return "redirect:/main";
-
         degrees = Precision.round((degrees / successAmount), 2);
         wind = Precision.round((wind / successAmount), 2);
         humidity = Precision.round((humidity / successAmount), 2);

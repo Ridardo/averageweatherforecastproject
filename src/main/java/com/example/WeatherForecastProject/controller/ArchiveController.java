@@ -61,7 +61,7 @@ public class ArchiveController {
 
         List<Forecast> forecasts = forecastRepo.findByTown(townRepo.findByName(townInput));
         _forecasts.forEach(forecast -> {
-            System.out.println(forecast.getDate().substring(0, 9));
+            System.out.println(forecast.getDate().substring(0, 10));
             System.out.println(date);
             System.out.println(date.compareTo(forecast.getDate().substring(0, 10)));
                     if (date.compareTo(forecast.getDate().substring(0, 10)) != 0) {
@@ -70,9 +70,9 @@ public class ArchiveController {
                     }
                 });
         System.out.println(forecasts.size());
-        System.out.println(forecasts.size());
         if(!forecasts.isEmpty())
         {
+            model.put("towns", townRepo.findByName(townInput));
             model.put("forecasts", forecasts);
             return "archive";
         }
