@@ -66,6 +66,126 @@ public class MainController {
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String date = formatter.format(calendar.getTime());
 
+<<<<<<< Updated upstream
+=======
+        Integer successAmount = 0;
+
+        Map<String, Double> weatherApi;
+        if (weatherApi(town) != null) {
+            successAmount += 1;
+            weatherApi = weatherApi(town);
+            degrees += weatherApi.get("Degrees");
+            wind += weatherApi.get("Wind");
+            humidity += weatherApi.get("Humidity");
+            pressure += weatherApi.get("Pressure");
+        }
+
+        Map<String, Double> openWeatherApi;
+        if (openWeatherApi(town) != null) {
+            successAmount += 1;
+            openWeatherApi = openWeatherApi(town);
+            degrees += openWeatherApi.get("Degrees");
+            wind += openWeatherApi.get("Wind");
+            humidity += openWeatherApi.get("Humidity");
+            pressure += openWeatherApi.get("Pressure");
+        }
+
+        Map<String, Double> yandexParse;
+        if (yandexParse(town) != null) {
+            successAmount += 1;
+            yandexParse = yandexParse(town);
+            degrees += yandexParse.get("Degrees");
+            wind += yandexParse.get("Wind");
+            humidity += yandexParse.get("Humidity");
+            pressure += yandexParse.get("Pressure");
+        }
+
+        if (successAmount == 0)
+            return "redirect:/main";
+
+        degrees = Precision.round((degrees / successAmount), 2);
+        wind = Precision.round((wind / successAmount), 2);
+        humidity = Precision.round((humidity / successAmount), 2);
+        pressure = Precision.round((pressure / successAmount), 2);
+
+        Map<String, Double> weatherApiFuture;
+        if (weatherApiFuture(town) != null){
+            weatherApiFuture = weatherApiFuture(town);
+            future += weatherApiFuture.get("Degrees").toString() + "℃, ветер ";
+            future += weatherApiFuture.get("Wind").toString() + "м/с, влажность ";
+            future += weatherApiFuture.get("Humidity").toString() + "%, давление ";
+            future += weatherApiFuture.get("Pressure").toString() + " мм.р.с.";
+        }
+
+        System.out.println(future);
+
+        if (townRepo.existsByName(townInput))
+            townRepo.findByName(townInput).setFuture(future);
+        else{
+            townRepo.save(new Town(townInput));
+            townRepo.findByName(townInput).setFuture(future);
+        }
+
+        Forecast forecast = new Forecast(townRepo.findByName(townInput), degrees, date, wind, humidity, pressure);
+        forecastRepo.save(forecast);
+
+        Iterable<Forecast> forecasts = forecastRepo.findAll();
+        Iterable<Town> towns = townRepo.findAll();
+
+        model.put("forecasts", forecasts);
+        model.put("towns", towns);
+        return "redirect:/main";
+    }
+
+    public Map<String, Double> weatherApi(String town){
+        Map<String, Double> forecast = new HashMap<String, Double>();
+
+        Double degrees;
+        Double wind;
+        Double humidity;
+        Double pressure;
+
+
+        try {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url("http://api.weatherapi.com/v1/current.json?key=d29d08b3fd2f4219a4272219212005&q=" +
+                            town +
+                            "&aqi=no")
+                    .get()
+                    .build();
+            Response response = client.newCall(request).execute();
+
+            String jsonData = response.body().string();
+            JSONObject obj = new JSONObject(jsonData);
+
+            degrees = Double.parseDouble(obj.getJSONObject("current").getString("temp_c"));
+            wind = Double.parseDouble(obj.getJSONObject("current").getString("wind_kph"));
+            humidity = Double.parseDouble(obj.getJSONObject("current").getString("humidity"));
+            pressure = Precision.round((Double.parseDouble(obj.getJSONObject("current").getString("pressure_mb")) * 0.750062), 2);
+
+            forecast.put("Degrees", degrees);
+            forecast.put("Wind", wind);
+            forecast.put("Humidity", humidity);
+            forecast.put("Pressure", pressure);
+        }
+        catch (Exception e) {
+            return null;
+        }
+
+        return forecast;
+    }
+
+    public Map<String, Double> openWeatherApi(String town){
+        Map<String, Double> forecast = new HashMap<String, Double>();
+
+        Double degrees;
+        Double wind;
+        Double humidity;
+        Double pressure;
+
+
+>>>>>>> Stashed changes
         try {
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
