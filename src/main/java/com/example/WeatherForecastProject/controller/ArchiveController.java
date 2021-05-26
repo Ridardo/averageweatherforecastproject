@@ -70,9 +70,12 @@ public class ArchiveController {
                     }
                 });
         System.out.println(forecasts.size());
+        Town temp = new Town();
+        temp.setForecasts(forecasts);
+        temp.setName(townInput);
         if(!forecasts.isEmpty())
         {
-            model.put("towns", townRepo.findByName(townInput));
+            model.put("towns", temp);
             model.put("forecasts", forecasts);
             return "archive";
         }

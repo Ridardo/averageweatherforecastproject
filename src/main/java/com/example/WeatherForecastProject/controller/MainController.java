@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.math3.util.Precision;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,9 +24,7 @@ import org.json.*;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MainController {
@@ -41,14 +40,14 @@ public class MainController {
 
     @GetMapping("/main")
     public String main(Map<String, Object> model) {
-        //forecastRepo.deleteAll();
-        //townRepo.deleteAll();
+      //  forecastRepo.deleteAll();
+       // townRepo.deleteAll();
         // проверка? проверка ветки?
-        Iterable<Forecast> forecasts = forecastRepo.findAll();
-        Iterable<Town> towns = townRepo.findAll();
+     //   Iterable<Forecast> forecasts = forecastRepo.findAll();
+      //  Iterable<Town> towns = townRepo.findAll();
 
-        model.put("forecasts", forecasts);
-        model.put("towns", towns);
+    //    model.put("forecasts", forecasts);
+     //   model.put("towns", towns);
         return "main";
     }
 
@@ -118,12 +117,12 @@ public class MainController {
         Forecast forecast = new Forecast(townRepo.findByName(townInput), degrees, date, wind, humidity, pressure);
         forecastRepo.save(forecast);
 
-        Iterable<Forecast> forecasts = forecastRepo.findAll();
-        Iterable<Town> towns = townRepo.findAll();
+        List<Forecast> forecasts = forecastRepo.findAll();
+        Town temp = townRepo.findByName(townInput);
 
-        model.put("forecasts", forecasts);
-        model.put("towns", towns);
-        return "redirect:/main";
+        model.put("forecastss", forecasts.get(forecasts.size() - 1));
+        model.put("towns", temp);
+        return "/main";
     }
 
     public Map<String, Double> summarizeAvg(Map<String, Double> forecastMap, Map<String, Double> inputInfo){
