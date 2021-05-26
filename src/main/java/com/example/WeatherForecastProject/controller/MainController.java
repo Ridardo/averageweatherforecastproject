@@ -38,6 +38,7 @@ public class MainController {
     public String greeting(){
         return "greeting";
     }
+
     @GetMapping("/main")
     public String main(Map<String, Object> model) {
         //forecastRepo.deleteAll();
@@ -53,64 +54,56 @@ public class MainController {
 
     @PostMapping("/main")
     public String add(@RequestParam String townInput, Map<String, Object> model) throws ParseException, IOException, JSONException {
-        Double degrees = 0.0;
-        Double wind = 0.0;
-        Double humidity = 0.0;
-        Double pressure = 0.0;
+        if (townInput.equals("")) return "redirect:/main";
+
+        Double degrees, wind, humidity, pressure;
+        Map<String, Double> forecastMap = new HashMap<>();
         String future = "";
+
         String town = getTownNameEng(townInput);
+        if (town == null) return "redirect:/main";
         townInput = getTownNameRus(townInput);
 
         System.out.println(town);
         System.out.println(townInput + " weatherApiGood " + weatherApi(town));
-        //System.out.println(townInput + " openWeatherApiGood " + openWeatherApi(town));
-        //System.out.println(townInput + " yandexParseGood " + yandexParse(town));
+        System.out.println(townInput + " openWeatherApiGood " + openWeatherApi(town));
+        System.out.println(townInput + " yandexParseGood " + yandexParse(town));
         System.out.println(townInput + " future: " + weatherApiFuture(town));
 
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String date = formatter.format(calendar.getTime());
 
-        Integer successAmount = 0;
+        Integer successAmount;
 
-        Map<String, Double> weatherApi;
-        if (weatherApi(town) != null) {
+
+        Map<String, Double> weatherApi = weatherApi(town);
+        if (weatherApi != null){
+            summarizeAvg(forecastMap, weatherApi);
+            successAmount = 1;
+        }
+        else return "redirect:/main";
+
+
+        Map<String, Double> openWeatherApi = openWeatherApi(town);
+        if (openWeatherApi != null){
+            summarizeAvg(forecastMap, openWeatherApi);
             successAmount += 1;
-            weatherApi = weatherApi(town);
-            degrees += weatherApi.get("Degrees");
-            wind += weatherApi.get("Wind");
-            humidity += weatherApi.get("Humidity");
-            pressure += weatherApi.get("Pressure");
         }
 
-        Map<String, Double> openWeatherApi;
-        if (openWeatherApi(town) != null) {
+        Map<String, Double> yandexParse = yandexParse(town);
+        if (yandexParse != null){
+            summarizeAvg(forecastMap, yandexParse);
             successAmount += 1;
-            openWeatherApi = openWeatherApi(town);
-            degrees += openWeatherApi.get("Degrees");
-            wind += openWeatherApi.get("Wind");
-            humidity += openWeatherApi.get("Humidity");
-            pressure += openWeatherApi.get("Pressure");
         }
 
-        Map<String, Double> yandexParse;
-        if (yandexParse(town) != null) {
-            successAmount += 1;
-            yandexParse = yandexParse(town);
-            degrees += yandexParse.get("Degrees");
-            wind += yandexParse.get("Wind");
-            humidity += yandexParse.get("Humidity");
-            pressure += yandexParse.get("Pressure");
-        }
+        degrees = Precision.round((forecastMap.get("Degrees") / successAmount), 2);
+        wind = Precision.round((forecastMap.get("Wind") / successAmount), 2);
+        humidity = Precision.round((forecastMap.get("Humidity") / successAmount), 2);
+        pressure = Precision.round((forecastMap.get("Pressure") / successAmount), 2);
 
-        degrees = Precision.round((degrees / successAmount), 2);
-        wind = Precision.round((wind / successAmount), 2);
-        humidity = Precision.round((humidity / successAmount), 2);
-        pressure = Precision.round((pressure / successAmount), 2);
-
-        Map<String, Double> weatherApiFuture;
-        if (weatherApiFuture(town) != null){
-            weatherApiFuture = weatherApiFuture(town);
+        Map<String, Double> weatherApiFuture = weatherApiFuture(town);
+        if (weatherApiFuture != null){
             future += weatherApiFuture.get("Degrees").toString() + "℃, ветер ";
             future += weatherApiFuture.get("Wind").toString() + "м/с, влажность ";
             future += weatherApiFuture.get("Humidity").toString() + "%, давление ";
@@ -119,12 +112,8 @@ public class MainController {
 
         System.out.println(future);
 
-        if (townRepo.existsByName(townInput))
-            townRepo.findByName(townInput).setFuture(future);
-        else{
-            townRepo.save(new Town(townInput));
-            townRepo.findByName(townInput).setFuture(future);
-        }
+        if (!townRepo.existsByName(townInput)) townRepo.save(new Town(townInput));
+        townRepo.findByName(townInput).setFuture(future);
 
         Forecast forecast = new Forecast(townRepo.findByName(townInput), degrees, date, wind, humidity, pressure);
         forecastRepo.save(forecast);
@@ -135,6 +124,23 @@ public class MainController {
         model.put("forecasts", forecasts);
         model.put("towns", towns);
         return "redirect:/main";
+    }
+
+    public Map<String, Double> summarizeAvg(Map<String, Double> forecastMap, Map<String, Double> inputInfo){
+        if (forecastMap.containsKey("Degrees")){
+            forecastMap.put("Degrees", forecastMap.get("Degrees") + inputInfo.get("Degrees"));
+            forecastMap.put("Wind", forecastMap.get("Wind") + inputInfo.get("Wind"));
+            forecastMap.put("Humidity", forecastMap.get("Humidity") + inputInfo.get("Humidity"));
+            forecastMap.put("Pressure", forecastMap.get("Pressure") + inputInfo.get("Pressure"));
+        }
+        else{
+            forecastMap.put("Degrees", inputInfo.get("Degrees"));
+            forecastMap.put("Wind", inputInfo.get("Wind"));
+            forecastMap.put("Humidity", inputInfo.get("Humidity"));
+            forecastMap.put("Pressure", inputInfo.get("Pressure"));
+        }
+
+        return forecastMap;
     }
 
     public Map<String, Double> weatherApi(String town){
