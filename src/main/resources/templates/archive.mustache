@@ -15,7 +15,12 @@
         <button type="submit">Запросить записи</button>
     </form>
 </div>
-
+    <div>
+        <form method="post" action="userForecasts">
+            <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
+            <button type="submit">Показать историю Ваших запросов</button>
+        </form>
+    </div>
 
 {{#towns}}
     <div>Все найденные прогнозы:</div>
@@ -32,6 +37,22 @@
             {{/forecasts}}</div></i>
     </div>
 {{/towns}}
+    {{#user}}
+        <div>Все найденные прогнозы пользователя:</div>
+        <div>-----------------------------------------------</div>
+        <div>
+            <span>{{username}}</span><i><div>{{#forecasts}}
+            <div>
+                <span>{{#town}}{{name}}{{/town}}, </span>
+                <span>{{degrees}} градусов, </span>
+                <span>ветер {{wind}}, </span>
+                <span>{{humidity}}% влажности воздуха, </span>
+                <span>давление {{pressure}} мм.р.с., </span>
+                <span>датировано {{date}}</span>
+            </div>
+        {{/forecasts}}</div></i>
+        </div>
+    {{/user}}
 </center>
 </body>
 </html>

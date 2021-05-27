@@ -23,7 +23,20 @@ public class Forecast {
     @JoinColumn(name="town_id")
     private Town town;
 
+    @ManyToOne
+    @JoinColumn(name="usr_id")
+    private User user;
+
     private String date;
+
+    public User getUser() {
+         return user;
+    }
+
+    public void setUser(User user)
+    {
+        this.user = user;
+    }
 
     public String getDate() {
         return date;

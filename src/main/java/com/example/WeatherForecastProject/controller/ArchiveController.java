@@ -5,6 +5,7 @@ import com.example.WeatherForecastProject.domain.Forecast;
 import com.example.WeatherForecastProject.domain.Town;
 import com.example.WeatherForecastProject.repos.ForecastRepo;
 import com.example.WeatherForecastProject.repos.TownRepo;
+import com.example.WeatherForecastProject.repos.UserRepo;
 import jdk.nashorn.internal.parser.JSONParser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -16,6 +17,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +36,8 @@ public class ArchiveController {
     private ForecastRepo forecastRepo;
     @Autowired
     private TownRepo townRepo;
+    @Autowired
+    private UserRepo userRepo;
 
     @GetMapping("/archive")
     public String archive(Map<String, Object> model) {
@@ -76,6 +81,28 @@ public class ArchiveController {
         if(!forecasts.isEmpty())
         {
             model.put("towns", temp);
+            model.put("forecasts", forecasts);
+            return "archive";
+        }
+        model.put("message", "По запросу прогнозов не найдено");
+        return "archive";
+    }
+    @PostMapping("userForecasts")
+    public String search( Map<String, Object> model) throws ParseException, IOException, JSONException {
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = "";
+
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails)principal).getUsername();
+        }
+
+        List<Forecast> forecasts = forecastRepo.findByUser(userRepo.findByUsername(username));
+        System.out.println(forecasts.size());
+
+        if(!forecasts.isEmpty())
+        {
+            model.put("user", userRepo.findByUsername(username));
             model.put("forecasts", forecasts);
             return "archive";
         }

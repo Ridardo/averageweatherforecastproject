@@ -1,5 +1,16 @@
 <html>
+<style type="text/css">
+   #footer {
+    position: fixed; /* Фиксированное положение */
+    left: 0; bottom: 0; /* Левый нижний угол */
+    padding: 10px; /* Поля вокруг текста */
+    background: #39b54a; /* Цвет фона */
+    color: #fff; /* Цвет текста */
+    width: 100%; /* Ширина слоя */
+   }
+  </style>
 <body>
+<center>
 <div>
     <form action="/logout" method="post">
         <input type="hidden" name="_csrf" value="{{_csrf.token}}" />
@@ -14,16 +25,16 @@
     </form>
 </div>
 
-<div>Список городов и прогнозов по ним:</div>
-<div>-----------------------------------------------</div>
 {{#towns}}
+    <div>Результаты запроса:</div>
+    <div>-----------------------------------------------</div>
     <div>
         <span>Прогноз на завтра в городе <b>{{name}}</b>: <u>{{future}}</u></span>
+        <div>-----------------------------------------------</div>
         <div>
-            Архив:
+            Погода в данный момент:
         </div>
-        <ul>
-            <li><i><div>{{#forecasts}}
+        <i><div>{{#forecastss}}
                 <div>
                     <span>{{degrees}}℃, </span>
                     <span>ветер {{wind}} м/с, </span>
@@ -31,10 +42,13 @@
                     <span>давление {{pressure}} мм.р.с., </span>
                     <span>датировано {{date}}</span>
                 </div>
-            {{/forecasts}}</div></i></li>
-        </ul>
+            {{/forecastss}}</div></i>
     </div>
+    <div>-----------------------------------------------</div>
 {{/towns}}
+
 <a href="/archive">Поиск прогнозов</a>
+    <div id="footer"> Информация о погоде предоставлена сервисами: Yandex, OpenWeatherMap, WeatherAPI</div>
+</center>
 </body>
 </html>

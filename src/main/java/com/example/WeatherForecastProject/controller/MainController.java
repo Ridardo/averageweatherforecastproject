@@ -5,6 +5,7 @@ import com.example.WeatherForecastProject.domain.Forecast;
 import com.example.WeatherForecastProject.domain.Town;
 import com.example.WeatherForecastProject.repos.ForecastRepo;
 import com.example.WeatherForecastProject.repos.TownRepo;
+import com.example.WeatherForecastProject.repos.UserRepo;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -15,6 +16,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +35,8 @@ public class MainController {
     private ForecastRepo forecastRepo;
     @Autowired
     private TownRepo townRepo;
+    @Autowired
+    private UserRepo userRepo;
 
     @GetMapping("/")
     public String greeting(){
@@ -48,6 +53,15 @@ public class MainController {
 
     //    model.put("forecasts", forecasts);
      //   model.put("towns", towns);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails)principal).getUsername();
+            System.out.println(username);
+        } else {
+            String username = principal.toString();
+            System.out.println(username);
+        }
         return "main";
     }
 
@@ -75,14 +89,12 @@ public class MainController {
 
         Integer successAmount;
 
-
         Map<String, Double> weatherApi = weatherApi(town);
         if (weatherApi != null){
             summarizeAvg(forecastMap, weatherApi);
             successAmount = 1;
         }
         else return "redirect:/main";
-
 
         Map<String, Double> openWeatherApi = openWeatherApi(town);
         if (openWeatherApi != null){
@@ -114,7 +126,16 @@ public class MainController {
         if (!townRepo.existsByName(townInput)) townRepo.save(new Town(townInput));
         townRepo.findByName(townInput).setFuture(future);
 
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = "";
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails)principal).getUsername();
+            System.out.println(username);
+        }
         Forecast forecast = new Forecast(townRepo.findByName(townInput), degrees, date, wind, humidity, pressure);
+        forecast.setUser(userRepo.findByUsername(username));
+
         forecastRepo.save(forecast);
 
         List<Forecast> forecasts = forecastRepo.findAll();

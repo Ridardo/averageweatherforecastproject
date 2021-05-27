@@ -14,10 +14,24 @@ public class User {
     private String password;
     private boolean active;
 
+    @OneToMany(targetEntity = Forecast.class,mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Forecast> forecasts;
+
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+
+    public List<Forecast> getForecasts() {
+        return forecasts;
+    }
+
+    public void setForecasts(List<Forecast> forecasts) {
+        this.forecasts = forecasts;
+    }
+
+    public void addForecast(Forecast forecast) { this.forecasts.add(forecast); }
 
     public Long getId() {
         return id;
